@@ -200,10 +200,15 @@ def call_mcp_tool(
                 "limit",
                 "availability",
             )
-            status = optional_clean_str_arg("status") or "open"
-            normalized_status = status.lower()
-            if normalized_status not in {"open", "paid", "closed"}:
-                raise ValueError("status must be one of: open, paid, closed")
+            if "status" not in args:
+                normalized_status = "open"
+            else:
+                status = str_arg("status")
+                if contains_control_character(status):
+                    raise ValueError("status must not contain control characters")
+                if status not in {"open", "paid", "closed"}:
+                    raise ValueError("status must be one of: open, paid, closed")
+                normalized_status = status
             query = select(Bounty).where(Bounty.status == normalized_status)
             query_text = optional_bounty_search_query_arg()
             if query_text:
